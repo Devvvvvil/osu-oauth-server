@@ -95,9 +95,15 @@ export function getConnectUrl(state) {
   );
 }
 
-/* ⭐ FIXED HERE */
+/* ⭐ DEBUG VERSION */
 export async function exchangeCodeForToken(code) {
   const redirectUri = `${process.env.BASE_URL}/osu/callback`;
+
+  console.log("===== OAUTH DEBUG =====");
+  console.log("CLIENT_ID:", process.env.OSU_CLIENT_ID);
+  console.log("CLIENT_SECRET prefix:", process.env.OSU_CLIENT_SECRET?.slice(0, 6));
+  console.log("REDIRECT_URI:", redirectUri);
+  console.log("=======================");
 
   const res = await axios.post(
     "https://osu.ppy.sh/oauth/token",
@@ -119,7 +125,6 @@ export async function exchangeCodeForToken(code) {
   return res.data;
 }
 
-/* ⭐ FIXED HERE TOO */
 export async function refreshToken(refresh_token) {
   const res = await axios.post(
     "https://osu.ppy.sh/oauth/token",
