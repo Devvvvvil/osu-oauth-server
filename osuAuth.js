@@ -14,10 +14,8 @@ function ensureFile(path) {
   }
 }
 
-// Safe JSON loader: fixes empty/invalid JSON automatically
 function loadJSON(path) {
   ensureFile(path);
-
   const raw = fs.readFileSync(path, "utf8").trim();
   if (!raw) {
     fs.writeFileSync(path, "{}", "utf8");
@@ -27,7 +25,6 @@ function loadJSON(path) {
   try {
     return JSON.parse(raw);
   } catch {
-    // if corrupted, reset
     fs.writeFileSync(path, "{}", "utf8");
     return {};
   }
@@ -49,7 +46,6 @@ export function createState(discordId) {
 
   const state = `${discordId}.${nonce}.${sig}`;
 
-  // expire in 10 minutes
   pending[state] = { discordId, createdAt: Date.now() };
   saveJSON(PENDING_PATH, pending);
 
@@ -73,7 +69,6 @@ export function consumeState(state) {
 
   if (sig !== expected) return null;
 
-  // expire check (10 min)
   if (Date.now() - entry.createdAt > 10 * 60 * 1000) {
     delete pending[state];
     saveJSON(PENDING_PATH, pending);
@@ -100,40 +95,48 @@ export function getConnectUrl(state) {
   );
 }
 
+/* ⭐ FIXED HERE */
 export async function exchangeCodeForToken(code) {
   const redirectUri = `${process.env.BASE_URL}/osu/callback`;
 
-  const body = new URLSearchParams();
-  body.set("client_id", process.env.OSU_CLIENT_ID);
-  body.set("client_secret", process.env.OSU_CLIENT_SECRET);
-  body.set("grant_type", "authorization_code");
-  body.set("code", code);
-  body.set("redirect_uri", redirectUri);
-
-  const res = await axios.post("https://osu.ppy.sh/oauth/token", body.toString(), {
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Accept: "application/json",
+  const res = await axios.post(
+    "https://osu.ppy.sh/oauth/token",
+    {
+      client_id: process.env.OSU_CLIENT_ID,
+      client_secret: process.env.OSU_CLIENT_SECRET,
+      grant_type: "authorization_code",
+      code,
+      redirect_uri: redirectUri,
     },
-  });
+    {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    }
+  );
 
   return res.data;
 }
 
+/* ⭐ FIXED HERE TOO */
 export async function refreshToken(refresh_token) {
-  const body = new URLSearchParams();
-  body.set("client_id", process.env.OSU_CLIENT_ID);
-  body.set("client_secret", process.env.OSU_CLIENT_SECRET);
-  body.set("grant_type", "refresh_token");
-  body.set("refresh_token", refresh_token);
-  body.set("scope", "public identify");
-
-  const res = await axios.post("https://osu.ppy.sh/oauth/token", body.toString(), {
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Accept: "application/json",
+  const res = await axios.post(
+    "https://osu.ppy.sh/oauth/token",
+    {
+      client_id: process.env.OSU_CLIENT_ID,
+      client_secret: process.env.OSU_CLIENT_SECRET,
+      grant_type: "refresh_token",
+      refresh_token,
+      scope: "public identify",
     },
-  });
+    {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    }
+  );
 
   return res.data;
 }
@@ -150,7 +153,6 @@ export function getLinked(discordId) {
 }
 
 export async function osuApiGet(link, path) {
-  // refresh if expired
   let accessToken = link.access_token;
 
   if (!link.expires_at || Date.now() >= link.expires_at) {
