@@ -105,6 +105,12 @@ export async function exchangeCodeForToken(code) {
   console.log("REDIRECT_URI:", redirectUri);
   console.log("=======================");
 
+export async function exchangeCodeForToken(code) {
+  const redirectUri = `${process.env.BASE_URL}/osu/callback`;
+
+  console.log("CLIENT_ID:", process.env.OSU_CLIENT_ID);
+  console.log("SECRET prefix:", process.env.OSU_CLIENT_SECRET?.slice(0,5));
+
   const res = await axios.post(
     "https://osu.ppy.sh/oauth/token",
     {
