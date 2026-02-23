@@ -1,5 +1,4 @@
 import express from "express";
-import dotenv from "dotenv";
 import {
   consumeState,
   exchangeCodeForToken,
@@ -7,7 +6,7 @@ import {
   osuApiGet,
 } from "./osuAuth.js";
 
-dotenv.config();
+
 
 export function startWebServer() {
   const app = express();
